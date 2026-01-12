@@ -3,12 +3,14 @@
 import { API_URL } from '@/constants';
 import { useSearchParams } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 export default function EditBusinessListing() {
     // console.log(listingId)
     const search = useSearchParams()
     console.log(search.get('id'))
     const listingId = search.get('id')
+
 
 
     const [formData, setFormData] = useState({
@@ -30,6 +32,7 @@ export default function EditBusinessListing() {
         sub_category_id: '',
         message: '',
         business_model: '',
+        ai_status: '',
         website_url: ''
     });
 
@@ -119,6 +122,7 @@ export default function EditBusinessListing() {
                         package_status: listing.package_status || 'non_verified',
                         business_model: listing.business_model || '',
                         website_url: listing.website_url || '',
+                        ai_status: listing.ai_status || '',
                     });
                 } else {
                     setError('Listing not found');
@@ -162,12 +166,17 @@ export default function EditBusinessListing() {
 
             if (data.success) {
                 setSuccess(true);
+                toast.success('Listing updated successfully!');
                 setTimeout(() => setSuccess(false), 3000);
             } else {
-                setError(data.message || 'Failed to update listing');
+                const errorMessage = data.message || 'Failed to update listing';
+                setError(errorMessage);
+                toast.error(errorMessage);
             }
         } catch (err) {
-            setError('Error updating listing: ' + err.message);
+            const errorMessage = 'Error updating listing: ' + (err as any).message;
+            setError(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setSaving(false);
         }
@@ -421,6 +430,24 @@ export default function EditBusinessListing() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    AI Mode
+                                </label>
+                                {/* {formData.package_status} */}
+                                <select
+                                    name="ai_status"
+                                    value={formData.ai_status}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                    <option value="">Select</option>
+                                    <option value="processed">Processed</option>
+                                    <option value="ai_ready">AI Ready</option>
+                                    <option value="regenerated">Regenerated </option>
+                                    <option value="failed">Failed </option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Business Model
                                 </label>
                                 {/* {formData.package_status} */}
@@ -512,12 +539,7 @@ export default function EditBusinessListing() {
                             >
                                 {saving ? 'Saving...' : 'Save Changes'}
                             </button>
-                            {/* <button
-                                onClick={fetchListing}
-                                className="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                            >
-                                Reset
-                            </button> */}
+
                         </div>
                     </div>
                 </div>

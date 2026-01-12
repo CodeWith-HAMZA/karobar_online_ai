@@ -1,5 +1,6 @@
 'use client'
 import { API_URL } from '@/constants';
+import { truncate } from '@/utils';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 
@@ -23,10 +24,11 @@ export default function BusinessListingsTable() {
     const [error, setError] = useState(null);
     const [pagination, setPagination] = useState({
         page: 1,
-        limit: 30,
+        limit: 60,
         total: 0,
         totalPages: 0
     });
+    const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
 
 
 
@@ -129,17 +131,14 @@ export default function BusinessListingsTable() {
                                     {/* {listings[0].is_test_data} */}
                                 </div>
                                 <label className="text-gray-600">Show:</label>
-                                <select
+                                {/* <select
                                     value={pagination.limit}
                                     onChange={handleLimitChange}
                                     className="border border-gray-300 rounded px-3 py-2"
                                 >
-                                    <option value="10">10</option>
-                                    <option value="25">25</option>
-                                    <option value="30">30</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                </select>
+
+                                    <option value="60">60</option>
+                                </select> */}
                             </div>
                         </div>
                     </div>
@@ -182,11 +181,11 @@ export default function BusinessListingsTable() {
                                     </tr>
                                 ) : (
                                     filteredListings.map((listing) => (
-                                        <tr key={listing.id} onClick={() => {
-                                            router.push(`/edit/?id=${listing.id}`)
-                                        }} className="hover:bg-gray-50">
+                                        <tr key={listing.id} className="hover:bg-gray-50 cursor-pointer">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{listing.id}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{listing.full_name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap hover:text-gray-600/50 cursor-pointer text-sm text-gray-900" onClick={() => {
+                                                router.push(`/edit/?id=${listing.id}`)
+                                            }} >{listing.full_name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{listing.business_name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{listing.mobile_number}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{listing.email}</td>
@@ -197,7 +196,16 @@ export default function BusinessListingsTable() {
                                                 </span>
                                             </td>
                                             {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{listing.city || '-'}</td> */}
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{listing.message || '-'}</td>
+                                            <td
+                                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 w-64 truncate cursor-pointer hover:bg-gray-100 transition-colors"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (listing.message) setSelectedMessage(listing.message);
+                                                }}
+                                                title="Click to view full message"
+                                            >
+                                                {truncate(listing.message, 50) || '-'}
+                                            </td>
                                         </tr>
                                     ))
                                 )}
@@ -263,6 +271,44 @@ export default function BusinessListingsTable() {
                     </div>
                 </div>
             </div>
+
+            {/* Message Modal */}
+            {selectedMessage && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+                    onClick={() => setSelectedMessage(null)}
+                >
+                    <div
+                        className="bg-white rounded-lg max-w-2xl w-full p-6 shadow-xl relative"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-xl font-semibold text-gray-900">Full Message</h3>
+                            <button
+                                onClick={() => setSelectedMessage(null)}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="text-gray-700 whitespace-pre-wrap max-h-[60vh] overflow-y-auto p-2 bg-gray-50 rounded border border-gray-100">
+                            {selectedMessage}
+                        </div>
+
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                onClick={() => setSelectedMessage(null)}
+                                className="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
