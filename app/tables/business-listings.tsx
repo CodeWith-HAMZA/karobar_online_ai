@@ -130,6 +130,13 @@ export default function BusinessListingsTable() {
                                     <label htmlFor="is_test_data" className="text-gray-600 ml-2">Show Test Data</label>
                                     {/* {listings[0].is_test_data} */}
                                 </div>
+                                <button onClick={() => {
+                                    localStorage.removeItem('authToken');
+                                    // router.push('/login');
+                                    router.push('/auth')
+                                }} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                                    Logout
+                                </button>
                                 {/* <label className="text-gray-600">Show:</label> */}
                                 {/* <select
                                     value={pagination.limit}
