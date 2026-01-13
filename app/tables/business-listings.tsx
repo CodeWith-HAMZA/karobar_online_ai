@@ -130,7 +130,7 @@ export default function BusinessListingsTable() {
                                     <label htmlFor="is_test_data" className="text-gray-600 ml-2">Show Test Data</label>
                                     {/* {listings[0].is_test_data} */}
                                 </div>
-                                <label className="text-gray-600">Show:</label>
+                                {/* <label className="text-gray-600">Show:</label> */}
                                 {/* <select
                                     value={pagination.limit}
                                     onChange={handleLimitChange}
