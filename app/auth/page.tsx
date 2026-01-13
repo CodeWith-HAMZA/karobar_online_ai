@@ -11,7 +11,7 @@ export default function LoginPage() {
 
     // Static credentials
     const ADMIN_EMAIL = 'admin@admin.com';
-    const ADMIN_PASSWORD = '11111111';
+    const ADMIN_PASSWORD = '!@3456&*';
 
     // Simple encryption function (Base64 encoding)
     const encryptData = (data) => {
