@@ -33,7 +33,8 @@ export default function EditBusinessListing() {
         message: '',
         business_model: '',
         ai_status: '',
-        website_url: ''
+        website_url: '',
+        business_logo: ''
     });
 
     const [loading, setLoading] = useState(true);
@@ -122,6 +123,7 @@ export default function EditBusinessListing() {
                         package_status: listing.package_status || 'non_verified',
                         business_model: listing.business_model || '',
                         website_url: listing.website_url || '',
+                        business_logo: listing.business_logo || '',
                         ai_status: listing.ai_status || '',
                     });
                 } else {
@@ -145,6 +147,23 @@ export default function EditBusinessListing() {
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
+    };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const result = reader.result;
+                if (typeof result === 'string') {
+                    setFormData(prev => ({
+                        ...prev,
+                        business_logo: result
+                    }));
+                }
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleSubmit = async () => {
@@ -248,6 +267,44 @@ export default function EditBusinessListing() {
                         {/* Business Information */}
                         <div className="space-y-4">
                             <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">Business Information</h2>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Business Logo
+                                </label>
+                                <div className="mt-1 flex items-center gap-4">
+                                    {formData.business_logo && (
+                                        <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200">
+                                            <img
+                                                src={formData.business_logo as string}
+                                                alt="Business Logo"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, business_logo: '' }))}
+                                                className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl focus:outline-none hover:bg-red-600"
+                                                title="Remove logo"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        />
+                                        <p className="mt-1 text-xs text-gray-500">
+                                            PNG, JPG or GIF (MAX. 2MB recommended)
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
