@@ -178,6 +178,7 @@ export default function EditBusinessListing() {
             if (selectedFile) {
                 const uploadFormData = new FormData();
                 uploadFormData.append('file', selectedFile);
+                // uploadFormData.append("")
 
                 // Construct upload URL from API_URL base
                 // API_URL is .../api/v1/business-listings
@@ -204,7 +205,7 @@ export default function EditBusinessListing() {
                 body: JSON.stringify({
                     ...formData,
                     business_logo: currentLogoUrl,
-                    logo: currentLogoUrl
+                    logo: selectedFile ? currentLogoUrl : ""
                 })
             });
 
