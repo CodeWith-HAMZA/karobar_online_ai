@@ -39,10 +39,11 @@ export default function EditBusinessListing() {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [categories, setCategories] = useState([]);
     const [subCategories, setSubCategories] = useState([]);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
 
     useEffect(() => {
@@ -64,7 +65,7 @@ export default function EditBusinessListing() {
                 setCategories(data.data);
             }
         } catch (err) {
-            setError('Failed to fetch categories: ' + err.message);
+            setError('Failed to fetch categories: ' + (err as Error).message);
         } finally {
             setLoading(false);
         }
@@ -123,7 +124,7 @@ export default function EditBusinessListing() {
                         package_status: listing.package_status || 'non_verified',
                         business_model: listing.business_model || '',
                         website_url: listing.website_url || '',
-                        business_logo: listing.business_logo || '',
+                        business_logo: listing.business_logo || listing.logo || '',
                         ai_status: listing.ai_status || '',
                     });
                 } else {
@@ -131,17 +132,16 @@ export default function EditBusinessListing() {
                 }
             }
         } catch (err) {
-            setError('Failed to fetch listing: ' + err.message);
+            setError('Failed to fetch listing: ' + (err as Error).message);
         } finally {
             setLoading(false);
         }
     };
 
 
-    const handleChange = (e) => {
-
-        const { name, value, type, checked } = e.target;
-        console.log(name, value, type, checked)
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value, type } = e.target;
+        const checked = (e.target as HTMLInputElement).checked;
 
         setFormData(prev => ({
             ...prev,
@@ -152,6 +152,7 @@ export default function EditBusinessListing() {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setSelectedFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 const result = reader.result;
@@ -172,12 +173,39 @@ export default function EditBusinessListing() {
         setSuccess(false);
 
         try {
+            let currentLogoUrl = formData.business_logo;
+
+            if (selectedFile) {
+                const uploadFormData = new FormData();
+                uploadFormData.append('file', selectedFile);
+
+                // Construct upload URL from API_URL base
+                // API_URL is .../api/v1/business-listings
+                // Upload endpoint is .../upload
+                const baseUrl = API_URL.split('/api')[0];
+                const uploadUrl = `${baseUrl}/upload?business_listing_id=${listingId}`;
+
+                const uploadResponse = await fetch(uploadUrl, {
+                    method: 'POST',
+                    body: uploadFormData,
+                });
+
+                const uploadData = await uploadResponse.json();
+                if (uploadData.fileUrl) {
+                    currentLogoUrl = uploadData.fileUrl;
+                }
+            }
+
             const response = await fetch(`${API_URL}/${listingId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    ...formData,
+                    business_logo: currentLogoUrl,
+                    logo: currentLogoUrl
+                })
             });
 
             console.log(response, 'response')
@@ -186,6 +214,14 @@ export default function EditBusinessListing() {
             if (data.success) {
                 setSuccess(true);
                 toast.success('Listing updated successfully!');
+
+                // Update state with the confirmed URL and clear the selected file
+                setFormData(prev => ({
+                    ...prev,
+                    business_logo: currentLogoUrl
+                }));
+                setSelectedFile(null);
+
                 setTimeout(() => setSuccess(false), 3000);
             } else {
                 const errorMessage = data.message || 'Failed to update listing';
@@ -273,6 +309,7 @@ export default function EditBusinessListing() {
                                     Business Logo
                                 </label>
                                 <div className="mt-1 flex items-center gap-4">
+
                                     {formData.business_logo && (
                                         <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200">
                                             <img
